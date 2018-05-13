@@ -1,0 +1,114 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: go-web
+  annotations:
+    description: An example web server in go
+    tags: quickstart,golang
+    iconClass: icon-golang
+labels:
+  template: go-web
+  app: go-web
+objects:
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: go-web
+    annotations:
+      description: Exposes and load balances the application pods
+  spec:
+    ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: go-web
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: go-web
+  spec:
+    to:
+      kind: Service
+      name: go-web
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: go-web
+    annotations:
+      description: Keeps track of changes in the application image
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: go-web
+    annotations:
+      description: Defines how to build the application
+  spec:
+    source:
+      type: Git
+      git:
+        uri: "${SOURCE_REPOSITORY_URL}"
+        ref: "${SOURCE_REPOSITORY_REF}"
+      contextDir: "${CONTEXT_DIR}"
+    strategy:
+      type: Docker
+    output:
+      to:
+        kind: ImageStreamTag
+        name: go-web:latest
+    triggers:
+    - type: ConfigChange
+    - type: Generic
+      generic:
+        secret: "${GENERIC_WEBHOOK_SECRET}"
+    postCommit:
+      script: go test -v ./...
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: go-web
+    annotations:
+      description: Defines how to deploy the application server
+  spec:
+    strategy:
+      type: Recreate
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - go-web
+        from:
+          kind: ImageStreamTag
+          name: go-web:latest
+    - type: ConfigChange
+    replicas: 1
+    selector:
+      name: go-web
+    template:
+      metadata:
+        name: go-web
+        labels:
+          name: go-web
+      spec:
+        containers:
+        - name: go-web
+          image: go-web
+          ports:
+          - containerPort: 8080
+parameters:
+- name: SOURCE_REPOSITORY_URL
+  description: The URL of the repository with your application source code
+  value: https://github.com/pschiffe/ocp-go-webserver.git
+- name: SOURCE_REPOSITORY_REF
+  description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch
+- name: CONTEXT_DIR
+  description: Set this to the relative path to your project if it is not in the root
+    of your repository
+- name: GENERIC_WEBHOOK_SECRET
+  description: Generic trigger secret. A difficult to guess string encoded as part
+    of the webhook URL. Not encrypted.
+  generate: expression
+  from: "[a-zA-Z0-9]{40}"
