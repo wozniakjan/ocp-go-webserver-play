@@ -6,7 +6,7 @@ import (
 
 func main() {
   http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("Welcome to my website! v2"))
+    w.Write([]byte("Welcome to my website! v3"))
   })
 
   fs := http.FileServer(http.Dir("static/"))
