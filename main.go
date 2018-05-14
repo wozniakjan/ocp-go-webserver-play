@@ -6,7 +6,8 @@ import (
 
 func main() {
   http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("Welcome to my website! v3"))
+    w.WriteHeader(http.StatusInternalServerError)
+    w.Write([]byte("500 - Something bad happened!"))
   })
 
   fs := http.FileServer(http.Dir("static/"))
