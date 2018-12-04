@@ -120,7 +120,7 @@ failureThreshold: 3
 parameters:
 - name: SOURCE_REPOSITORY_URL
   description: The URL of the repository with your application source code
-  value: https://github.com/pschiffe/ocp-go-webserver.git
+  value: https://github.com/wozniakjan/ocp-go-webserver.git
 - name: SOURCE_REPOSITORY_REF
   description: Set this to a branch name, tag or other ref of your repository if you
     are not using the default branch
