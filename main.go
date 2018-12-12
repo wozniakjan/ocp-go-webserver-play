@@ -7,7 +7,7 @@ import (
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("working!"))
+		w.Write([]byte("working!\n"))
 	})
 
 	fs := http.FileServer(http.Dir("static/"))
